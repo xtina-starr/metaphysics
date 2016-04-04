@@ -4,6 +4,8 @@ import initials from './fields/initials';
 import Profile from './profile';
 import PartnerShow from './partner_show';
 import Location from './location';
+import { compact, filter, forEach, sortBy, map } from 'lodash';
+import { toSentence } from 'underscore.string';
 import {
   GraphQLString,
   GraphQLObjectType,
@@ -66,6 +68,46 @@ const PartnerType = new GraphQLObjectType({
         },
       },
       resolve: ({ id }, options) => gravity(`partner/${id}/shows`, options),
+    },
+    fair_highlights: {
+      type: GraphQLString,
+      args: {
+        size: {
+          type: GraphQLInt,
+          defaultValue: 10,
+        },
+        at_a_fair: {
+          type: GraphQLBoolean,
+          defaultValue: true,
+        },
+      },
+      resolve: ({ _id }, options) => {
+        return gravity(`partner/${_id}/shows`, options).then(shows => {
+          const fairShows = filter(shows, (show) => { return show.fair != null });
+          const sortedFairs = sortBy(fairShows, (show) => {
+            const sizes = {
+              'x-large' : 1,
+              'large' : 2,
+              'medium' : 3,
+              'small' : 4,
+              'x-small' : 5,
+            };
+            return sizes[show.fair.banner_size];
+          });
+
+          if (sortedFairs.length < 1) return;
+
+          const fairs = sortedFairs.slice(0,3);
+          const remaining = sortedFairs.length - fairs.length;
+
+          const fairNames = map(fairs, 'fair.name');
+          const remainingString = remaining > 0 ? ` & ${remaining} more` : ``;
+
+          const sentence = `Exhibitor at ` + toSentence(fairNames) + remainingString
+          console.log('sentence', sentence);
+          return sentence;
+        });
+      },
     },
     locations: {
       type: new GraphQLList(Location.type),
