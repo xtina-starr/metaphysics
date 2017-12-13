@@ -1,12 +1,15 @@
 import fetch from "../lib/apis/fetch"
 import { GraphQLObjectType, GraphQLList, GraphQLString } from "graphql"
+import Image from "./image"
 
 const SuggestedGeneType = new GraphQLObjectType({
   name: "SuggestedGene",
   fields: {
     id: { type: GraphQLString },
-    image_url: { type: GraphQLString },
     _id: { type: GraphQLString },
+    __id: { type: GraphQLString },
+    image_url: { type: GraphQLString },
+    image: Image,
     name: { type: GraphQLString },
   },
 })
