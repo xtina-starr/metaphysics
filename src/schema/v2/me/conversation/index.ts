@@ -139,13 +139,16 @@ const ConversationItem = new GraphQLObjectType<any, ResolverContext>({
       resolve: (artworkItem, _args, { artworkLoader }) => {
         if (artworkItem.item_type === "Artwork") {
           return artworkLoader(artworkItem.properties.id).then((artwork) => {
-            return {
+            const updatedArtwork = {
               ...artwork,
               __typename: "Artwork",
             }
+            return artwork.published ? updatedArtwork : null
           })
-        } else {
+        } else if (artworkItem.item_type === "PartnerShow") {
           throw new Error("PartnerShow not supported.")
+        } else {
+          return null
         }
       },
     },
